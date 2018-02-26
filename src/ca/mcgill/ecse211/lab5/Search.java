@@ -17,8 +17,8 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class Search {
-	private EV3LargeRegulatedMotor leftMotor;
-	private EV3LargeRegulatedMotor rightMotor;
+	private EV3LargeRegulatedMotor leftMotor = Lab5.leftMotor;
+	private EV3LargeRegulatedMotor rightMotor = Lab5.rightMotor;
 	private EV3UltrasonicSensor usSensor;
 	private Odometer odometer;
 	private Navigation navigation;
@@ -29,6 +29,9 @@ public class Search {
 	private static int sampleSize;
 	private static int samplesize_gyro;
 	private float[] theta_gyro;
+	
+	private double WHEEL_RAD = Lab5.WHEEL_RAD;
+	
 
 	private static double redMeanR = 14.3539221;
 	private static double redMeanG = 2.1460785;
@@ -62,13 +65,12 @@ public class Search {
 	private static final int FILTER_OUT = 80;
 	private int filterControl;
 
-	public Search(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, Odometer odometer, 
+	public Search( Odometer odometer, 
 			EV3UltrasonicSensor usSensor, EV3GyroSensor gyroSensor) {
-		this.leftMotor = leftMotor;
-		this.rightMotor = rightMotor;
+		
 		this.odometer = odometer;
 		this.usSensor = usSensor;
-		this.navigation = new Navigation(leftMotor, rightMotor);
+		this.navigation = new Navigation();
 		this.cSensor = new EV3ColorSensor(LocalEV3.get().getPort("S4"));
 		this.gyroSensor=gyroSensor;
 	}
@@ -99,8 +101,8 @@ public class Search {
 					angle = odometer.getT();
 
 					findObject(dist, TB);
-                    leftMotor.rotate(convertDistance(Lab5.WHEEL_RAD, -dist), true);
-					rightMotor.rotate(convertDistance(Lab5.WHEEL_RAD, -dist), true);
+                    leftMotor.rotate(convertDistance(WHEEL_RAD, -dist), true);
+					rightMotor.rotate(convertDistance(WHEEL_RAD, -dist), true);
 					while(true) {
 						if(Math.abs(LLx - odometer.getX()) < 10 && Math.abs(LLy - odometer.getY()) < 10) {
 							leftMotor.stop(true);
@@ -144,8 +146,8 @@ public class Search {
                     Sound.beepSequenceUp();
                     angle = odometer.getT();
                     findObject(dist, TB);
-                    leftMotor.rotate(convertDistance(Lab5.WHEEL_RAD, -dist), true);
-					rightMotor.rotate(convertDistance(Lab5.WHEEL_RAD, -dist), true);
+                    leftMotor.rotate(convertDistance(WHEEL_RAD, -dist), true);
+					rightMotor.rotate(convertDistance(WHEEL_RAD, -dist), true);
 					while(true) {
 						if(Math.abs(URx - odometer.getX()) < 10 && Math.abs(URy - odometer.getY()) < 10) {
 							leftMotor.stop(true);
@@ -166,8 +168,8 @@ public class Search {
 	}
 	
 	public void findObject(double distance, int TB) {
-		//leftMotor.rotate(convertDistance(Lab5.WHEEL_RAD, distance), true);
-		//rightMotor.rotate(convertDistance(Lab5.WHEEL_RAD, distance), true);
+		//leftMotor.rotate(convertDistance(WHEEL_RAD, distance), true);
+		//rightMotor.rotate(convertDistance(WHEEL_RAD, distance), true);
 		leftMotor.setSpeed(80);
 		rightMotor.setSpeed(80);
 		leftMotor.forward();
@@ -233,6 +235,8 @@ public class Search {
 		}
 	}
 
+	/**This is a rudimentary filter used for basic square driving
+	 * @returns distance */
 	public double getDistanceStraight() {
 		SampleProvider sampleProvider = usSensor.getMode("Distance"); // usDistance provides samples from
         // this instance
@@ -256,6 +260,9 @@ public class Search {
 		      return distance;
 		 }
 	}
+	
+	/**This is a median filter used for block searching, for accuracy purposes
+	 * @returns distance */
 	public double getDistanceTurn() {
 		SampleProvider sampleProvider = usSensor.getMode("Distance"); // usDistance provides samples from
         // this instance
@@ -273,6 +280,8 @@ public class Search {
 		Collections.sort(distance);
 		return distance.get(5/2);
 	}
+	
+	/**Get's gyro data for theta correction */
 	public void fetchGyroData() {
 		sampleProvider_gyro = gyroSensor.getAngleMode();
 		samplesize_gyro=sampleProvider_gyro.sampleSize();

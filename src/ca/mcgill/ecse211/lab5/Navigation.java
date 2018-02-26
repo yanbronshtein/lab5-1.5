@@ -13,16 +13,17 @@ public class Navigation {
 	private double distance;
 	private Odometer odometer;
 	private double t;
-	private EV3LargeRegulatedMotor leftMotor;
-	private EV3LargeRegulatedMotor rightMotor;
-	private double turnAngle;
 	
+	private double turnAngle;
+	public static final EV3LargeRegulatedMotor leftMotor =
+			Lab5.leftMotor;
+	public static final EV3LargeRegulatedMotor rightMotor =
+			Lab5.rightMotor;
 	private static final int FORWARD_SPEED = 200;
 	private static final int ROTATE_SPEED = 100;
 		
-	public Navigation(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor) {
-		this.leftMotor = leftMotor;
-		this.rightMotor = rightMotor;
+	public Navigation() {
+		
 		try {
 			this.odometer = Odometer.getOdometer();
 		} catch (OdometerExceptions e) {
@@ -30,7 +31,7 @@ public class Navigation {
 		}
 	}
 	/**
-	 * 
+	 * Method to calculate distance to point, choice min angle and go straight to it
 	 * @param x
 	 * @param y
 	 */
@@ -72,15 +73,32 @@ public class Navigation {
 		rightMotor.rotate(-convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, turnAngle), false);
 	}
 	
-	
+	/**Method checks if either left or right motor moving
+	 * @returns true if at least one movign */
 	public boolean isNavigating(){
 		return leftMotor.isMoving() || rightMotor.isMoving();
 	}
 	
 	
+	/**
+	 * Determine how much the motor must rotate for vehicle to reach a certain distance
+	 * 
+	 * @param radius
+	 * @param distance
+	 * @return
+	 */
 	private static int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
+
+	/**
+	 * Determine the angle wheel motors need to rotate to for robot to turn to desired angle 
+	 * 
+	 * @param radius
+	 * @param TRACK
+	 * @param angle
+	 * @return
+	 */
 	private static int convertAngle(double radius, double width, double angle) {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);
 	}

@@ -10,8 +10,10 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class LightLocalizer {
-	private EV3LargeRegulatedMotor leftMotor;
-	private EV3LargeRegulatedMotor rightMotor;
+	public static final EV3LargeRegulatedMotor leftMotor =
+			Lab5.leftMotor;
+	public static final EV3LargeRegulatedMotor rightMotor =
+			Lab5.rightMotor;
 	private Odometer odometer;
 	private EV3ColorSensor cSensor;
 	private static SampleProvider sampleProvider;
@@ -27,13 +29,13 @@ public class LightLocalizer {
 	private double thetaCorrection;
 	private double TILE_SIZE = Lab5.TILE_SIZE;
 	private double WHEEL_RAD = Lab5.WHEEL_RAD;
+	private double distToSensor = -15;
 	/**incident angle to first, second, third, and fourth gridlines */
 	private double angle[] = new double[4]; 
 	private double thetay, thetax;
 	
-	public LightLocalizer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, Odometer odometer) {
-		this.leftMotor = leftMotor;
-		this.rightMotor = rightMotor;
+	public LightLocalizer(Odometer odometer) {
+		
 		this.odometer = odometer;
 		this.cSensor = new EV3ColorSensor(LocalEV3.get().getPort("S2"));
 	}
@@ -42,8 +44,8 @@ public class LightLocalizer {
 			lightLocalization();
 			thetay = (angle[0]-angle[2])/2;
 			thetax = (angle[1]-angle[3])/2;
-    			odometer.setX(-15* Math.cos(Math.toRadians(thetay)));
-			odometer.setY(-15* Math.cos(Math.toRadians(thetax)));
+    			odometer.setX(distToSensor* Math.cos(Math.toRadians(thetay)));
+			odometer.setY(distToSensor* Math.cos(Math.toRadians(thetax)));
 
 			travelTo(0,0);
 			turnTo(0);
@@ -53,8 +55,8 @@ public class LightLocalizer {
 			lightLocalization();
 			thetay = (angle[0]-angle[2])/2;
 			thetax = (angle[1]-angle[3])/2;
-    			odometer.setX(-15* Math.cos(Math.toRadians(thetay)));
-			odometer.setY(-15* Math.cos(Math.toRadians(thetax)));
+    			odometer.setX(distToSensor* Math.cos(Math.toRadians(thetay)));
+			odometer.setY(distToSensor* Math.cos(Math.toRadians(thetax)));
 			travelTo(0,0);
 			turnTo(0);
 			odometer.setXYT(7*TILE_SIZE, TILE_SIZE, 270);
@@ -63,8 +65,8 @@ public class LightLocalizer {
 			lightLocalization();
 			thetay = (angle[0]-angle[2])/2;
 			thetax = (angle[1]-angle[3])/2;
-    			odometer.setX(-15* Math.cos(Math.toRadians(thetay)));
-			odometer.setY(-15* Math.cos(Math.toRadians(thetax)));
+    			odometer.setX(distToSensor* Math.cos(Math.toRadians(thetay)));
+			odometer.setY(distToSensor* Math.cos(Math.toRadians(thetax)));
 			travelTo(0,0);
 			turnTo(0);
 			odometer.setXYT(7*TILE_SIZE, 7*TILE_SIZE, 180);
@@ -73,13 +75,16 @@ public class LightLocalizer {
 			lightLocalization();
 			thetay = (angle[0]-angle[2])/2;
 			thetax = (angle[1]-angle[3])/2;
-    			odometer.setX(-15* Math.cos(Math.toRadians(thetay)));
-			odometer.setY(-15* Math.cos(Math.toRadians(thetax)));
+    			odometer.setX(distToSensor* Math.cos(Math.toRadians(thetay)));
+			odometer.setY(distToSensor* Math.cos(Math.toRadians(thetax)));
 			travelTo(0,0);
 			turnTo(0);
 			odometer.setXYT(TILE_SIZE, 7*TILE_SIZE, 90);
 		}
 	}
+	
+	/**Use RGB values to detect black line. 
+	 * */
 	public void lightLocalization() {
 		int counter = 0;
 		cSensor.setFloodlight(lejos.robotics.Color.RED);
@@ -88,12 +93,14 @@ public class LightLocalizer {
 	    sampleSize = sampleProvider.sampleSize();
 	    float []colorSample = new float[sampleSize];
 	    	turnTo(45);	
-	    	leftMotor.rotate(convertDistance(Lab5.WHEEL_RAD, 5 ), true);     
-	    	rightMotor.rotate(convertDistance(Lab5.WHEEL_RAD, 5 ), false);
+	    	leftMotor.rotate(convertDistance(WHEEL_RAD, 5 ), true);     
+	    	rightMotor.rotate(convertDistance(WHEEL_RAD, 5 ), false);
 	    	leftMotor.backward();
 	    	rightMotor.forward();
 		while(true) {
 			sampleProvider.fetchSample(colorSample, 0);
+			
+			/*Count number of blacklines*/
 			if(BlackLine(colorSample[0], colorSample[1], colorSample[2])) {
 				angle[counter] = odometer.getT();
 				Sound.beep();
@@ -105,6 +112,9 @@ public class LightLocalizer {
 		}
 	}
 	
+	
+	/**Method Discards RBG values that could not correspond to black line
+	 * @returns true if correct range for all values  */
 	public boolean BlackLine(float R,float G, float B) {
 		  if(R<=0.002 || G<=0.002 || B<=0.002) {
 			  //false if the values are too low, happens when looking at something far
@@ -137,8 +147,8 @@ public class LightLocalizer {
 		rightMotor.setAcceleration(500);
 		leftMotor.setSpeed(ROTATE_SPEED);
 		rightMotor.setSpeed(ROTATE_SPEED);
-		leftMotor.rotate(convertDistance(Lab5.WHEEL_RAD, distance), true);
-		rightMotor.rotate(convertDistance(Lab5.WHEEL_RAD, distance), false);
+		leftMotor.rotate(convertDistance(WHEEL_RAD, distance), true);
+		rightMotor.rotate(convertDistance(WHEEL_RAD, distance), false);
 	}
 		
 	public void turnTo(double theta) {
@@ -153,8 +163,8 @@ public class LightLocalizer {
 		}
 		leftMotor.setSpeed(ROTATE_SPEED);
 		rightMotor.setSpeed(ROTATE_SPEED);
-		leftMotor.rotate(convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, turnAngle), true);
-		rightMotor.rotate(-convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, turnAngle), false);
+		leftMotor.rotate(convertAngle(WHEEL_RAD, Lab5.TRACK, turnAngle), true);
+		rightMotor.rotate(-convertAngle(WHEEL_RAD, Lab5.TRACK, turnAngle), false);
 	}
 	
 	private static int convertAngle(double radius, double width, double angle) {

@@ -16,9 +16,11 @@ import lejos.utility.Delay;
 
 public class UltrasonicLocalizer {
 	public enum LocalizationType{fallingEdge, risingEdge};
-	private EV3LargeRegulatedMotor leftMotor;
-	private EV3LargeRegulatedMotor rightMotor;
+	private EV3LargeRegulatedMotor leftMotor = Lab5.leftMotor;
+	private EV3LargeRegulatedMotor rightMotor = Lab5.leftMotor;
 	private EV3UltrasonicSensor usSensor;
+	private double WHEEL_RAD = Lab5.WHEEL_RAD;
+	private double TRACK =Lab5.TRACK;
 	private Odometer odometer;
 	private LocalizationType type;
 	private static final int FORWARD_SPEED = 200;
@@ -27,10 +29,9 @@ public class UltrasonicLocalizer {
 	private double distance[];
 	
 	
-	public UltrasonicLocalizer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, LocalizationType type,
+	public UltrasonicLocalizer(LocalizationType type,
 			Odometer odometer, EV3UltrasonicSensor usSensor) {
-		this.leftMotor = leftMotor;
-		this.rightMotor = rightMotor;
+		
 		this.type = type;
 		this.odometer = odometer;
 		this.usSensor = usSensor;
@@ -142,8 +143,8 @@ public class UltrasonicLocalizer {
 		}
 		leftMotor.setSpeed(ROTATE_SPEED);
 		rightMotor.setSpeed(ROTATE_SPEED);
-		leftMotor.rotate(convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, turnAngle), true);
-		rightMotor.rotate(-convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, turnAngle), false);
+		leftMotor.rotate(convertAngle(WHEEL_RAD, TRACK, turnAngle), true);
+		rightMotor.rotate(-convertAngle(WHEEL_RAD, TRACK, turnAngle), false);
 	}
 	
 	private static int convertAngle(double radius, double width, double angle) {
@@ -153,6 +154,9 @@ public class UltrasonicLocalizer {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
 	
+	
+	/**This method is used for when we are locating the blocks. 
+	 * It applies a median filter to discard garbage US sensor readings */
 	public double getDistance() {
 		SampleProvider sampleProvider = usSensor.getMode("Distance"); // usDistance provides samples from
         // this instance

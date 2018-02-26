@@ -21,27 +21,34 @@ import lejos.hardware.sensor.EV3GyroSensor;
 public class Lab5 {
 
 	// Motor Objects, and Robot related parameters
-	private static final EV3LargeRegulatedMotor leftMotor =
+	public static final EV3LargeRegulatedMotor leftMotor =
 			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
-	private static final EV3LargeRegulatedMotor rightMotor =
+	public static final EV3LargeRegulatedMotor rightMotor =
 			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
-	private static final TextLCD lcd = LocalEV3.get().getTextLCD();
-	private static final EV3UltrasonicSensor  usSensor= new EV3UltrasonicSensor
+	
+	
+	public static final TextLCD lcd = LocalEV3.get().getTextLCD();
+	public static final EV3UltrasonicSensor  usSensor = new EV3UltrasonicSensor
 			(LocalEV3.get().getPort("S1"));
-	private static final EV3GyroSensor gyroSensor= new EV3GyroSensor(LocalEV3.get().getPort("S3"));
-	//private static final Port usPort = LocalEV3.get().getPort("S4");
+	public static final EV3GyroSensor gyroSensor= new EV3GyroSensor(LocalEV3.get().getPort("S3"));
 	public static final double WHEEL_RAD = 2.16;
 	public static final double TRACK = 12.2;
 	
 	public static final double TILE_SIZE = 30.48;
 	public static final int ROTATE_SPEED = 100;
 
+	/**Lower corner x */
 	public static int LLx = 3;
+	/**Lower corner y */
 	public static int LLy = 3;
+	/**Upper corner x */
 	public static int URx = 7;
-	public static int URy = 7;
-	//red-1, blue-2, yellow-3, white-4
+	
+	/**Upper corner y */public static int URy = 7;
+	/**Test block red=1, blue = 2, yellow=3, white=4 */
 	public static int TB = 4;
+	
+	/**starting corner */
 	public static int SC = 0;
 
 	public static void main(String[] args) throws OdometerExceptions {
@@ -50,11 +57,11 @@ public class Lab5 {
 
 		// Odometer related objects
 		Odometer odometer = Odometer.getOdometer(leftMotor, rightMotor, TRACK, WHEEL_RAD); 
-		Navigation navigation = new Navigation(leftMotor, rightMotor);
-		UltrasonicLocalizer ultrasoniclocalizer = new UltrasonicLocalizer(leftMotor, rightMotor, LocalizationType.fallingEdge,
+		Navigation navigation = new Navigation();
+		UltrasonicLocalizer ultrasoniclocalizer = new UltrasonicLocalizer(LocalizationType.fallingEdge,
 				odometer, usSensor);
-		Search search = new Search(leftMotor, rightMotor, odometer, usSensor, gyroSensor);
-		LightLocalizer lightLocalizer = new LightLocalizer(leftMotor, rightMotor,odometer);
+		Search search = new Search( odometer, usSensor, gyroSensor);
+		LightLocalizer lightLocalizer = new LightLocalizer(odometer);
 		//OdometryCorrection odometryCorrection = new OdometryCorrection(); 
 		Display odometryDisplay = new Display(lcd); // No need to change
 		//Avoid avoid = new Avoid(leftMotor, rightMotor);
@@ -70,6 +77,8 @@ public class Lab5 {
 
 		if (buttonChoice == Button.ID_LEFT) {
 			lcd.clear();
+			
+			
 			while(true) {
 				int color = search.getColor();
 				//red
